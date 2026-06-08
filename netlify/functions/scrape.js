@@ -4,23 +4,24 @@
 // and updates the current day's record in a Netlify Blobs store.
 //
 // Storage model: one blob per day, keyed by "yyyy-mm-dd". Each blob holds an
-// array of disturbance records (same shape as the original local-file scraper).
+// array of disturbance records.
 //
 // Only type === "disturbance" items are stored (planned works are skipped).
+//
+// Uses the modern Netlify function signature (export default + exported config),
+// which is required for the Netlify Blobs environment to be injected.
 
-const crypto = require('node:crypto');
-const { getStore } = require('@netlify/blobs');
+import crypto from 'node:crypto';
+import { getStore } from '@netlify/blobs';
 
 const API_URL = 'https://api.irail.be/v1/disturbances/?format=json&lang=nl';
 
-// Fields tracked for change detection.
 const TRACKED_FIELDS = ['type', 'title', 'description', 'station', 'startTime', 'endTime', 'attachment'];
 
 function hashTitle(title) {
   return crypto.createHash('sha256').update(String(title)).digest('hex').slice(0, 12);
 }
 
-// yyyy-mm-dd in UTC (matches the ISO timestamps we store).
 function dayKey(date) {
   return date.toISOString().slice(0, 10);
 }
@@ -42,14 +43,12 @@ function normalizeResponse(json) {
 }
 
 async function fetchDisturbances() {
-  const res = await fetch(API_URL, {
-    headers: { 'User-Agent': 'irail-disturbances-scraper/1.0' },
-  });
+  const res = await fetch(API_URL, { headers: { 'User-Agent': 'irail-disturbances-scraper/1.0' } });
   if (!res.ok) throw new Error('HTTP ' + res.status);
   return res.json();
 }
 
-exports.handler = async () => {
+export default async () => {
   const nowDate = new Date();
   const now = nowDate.toISOString();
   const key = dayKey(nowDate);
@@ -61,13 +60,12 @@ exports.handler = async () => {
     json = await fetchDisturbances();
   } catch (err) {
     console.error('[' + now + '] fetch failed:', err.message);
-    return { statusCode: 502 };
+    return new Response('fetch failed', { status: 502 });
   }
 
   const fetched = normalizeResponse(json);
   const fetchedById = new Map(fetched.map((f) => [f.id, f]));
 
-  // Load today's existing records (empty if this is the first poll of the day).
   let records = [];
   try {
     const existing = await store.get(key, { type: 'json' });
@@ -82,7 +80,6 @@ exports.handler = async () => {
   let countUpdated = 0;
   let countResolved = 0;
 
-  // New or updated disturbances.
   for (const f of fetched) {
     const existing = byId.get(f.id);
 
@@ -128,7 +125,6 @@ exports.handler = async () => {
     if (changed) countUpdated++;
   }
 
-  // Disturbances no longer present -> mark resolved.
   for (const r of records) {
     if (!fetchedById.has(r.id) && r.active !== false) {
       r.history.push({ timestamp: now, field: 'active', oldValue: true, newValue: false });
@@ -145,8 +141,8 @@ exports.handler = async () => {
     ', resolved: ' + countResolved + ' (total tracked: ' + records.length + ')'
   );
 
-  return { statusCode: 200 };
+  return new Response('ok');
 };
 
 // Run every 5 minutes (cron, UTC).
-exports.config = { schedule: '*/5 * * * *' };
+export const config = { schedule: '*/5 * * * *' };
