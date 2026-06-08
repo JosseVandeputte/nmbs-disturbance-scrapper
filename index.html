@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>iRail Disturbances — Daily Log</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #14110d;
+    --panel: #1d1913;
+    --line: #322a1f;
+    --ink: #f3ead8;
+    --muted: #9a8e76;
+    --amber: #f5b526;
+    --amber-dim: #b9871a;
+    --green: #74b34a;
+    --red: #d8643f;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'DM Mono', monospace;
+    line-height: 1.5;
+    padding: clamp(1rem, 4vw, 3.5rem);
+    background-image: radial-gradient(circle at 1px 1px, rgba(245,181,38,0.04) 1px, transparent 0);
+    background-size: 28px 28px;
+  }
+  header {
+    border-bottom: 2px solid var(--line);
+    padding-bottom: 1.5rem;
+    margin-bottom: 2rem;
+  }
+  .kicker {
+    font-size: 0.75rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--amber);
+  }
+  h1 {
+    font-family: 'Fraunces', serif;
+    font-weight: 900;
+    font-size: clamp(2rem, 6vw, 3.5rem);
+    line-height: 1.0;
+    margin: 0.4rem 0 0.2rem;
+  }
+  .sub { color: var(--muted); font-size: 0.85rem; }
+
+  .controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 1.25rem;
+    margin-bottom: 2rem;
+  }
+  label { display: block; font-size: 0.7rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.4rem; }
+  select, input[type="date"] {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    color: var(--ink);
+    font-family: 'DM Mono', monospace;
+    font-size: 1rem;
+    padding: 0.6rem 0.8rem;
+    border-radius: 4px;
+    color-scheme: dark;
+  }
+  select:focus, input:focus { outline: 2px solid var(--amber); }
+
+  .summary {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.5rem;
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+  .summary b { color: var(--ink); font-weight: 500; }
+
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--amber);
+    border-radius: 4px;
+    padding: 1.2rem 1.4rem;
+    margin-bottom: 1rem;
+  }
+  .card.inactive { border-left-color: var(--muted); opacity: 0.72; }
+  .card-top { display: flex; justify-content: space-between; gap: 1rem; align-items: baseline; flex-wrap: wrap; }
+  .card h2 {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 1.25rem;
+    line-height: 1.2;
+  }
+  .badge {
+    font-size: 0.65rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 0.2rem 0.55rem;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+  .badge.active { background: rgba(116,179,74,0.15); color: var(--green); border: 1px solid rgba(116,179,74,0.4); }
+  .badge.resolved { background: rgba(154,142,118,0.15); color: var(--muted); border: 1px solid var(--line); }
+  .desc { white-space: pre-wrap; color: #ddd2bc; font-size: 0.9rem; margin: 0.8rem 0; }
+  .times { font-size: 0.75rem; color: var(--muted); display: flex; gap: 1.5rem; flex-wrap: wrap; }
+  .history {
+    margin-top: 0.9rem;
+    border-top: 1px dashed var(--line);
+    padding-top: 0.8rem;
+  }
+  .history summary { cursor: pointer; font-size: 0.75rem; color: var(--amber-dim); letter-spacing: 0.05em; }
+  .change { font-size: 0.72rem; color: var(--muted); margin-top: 0.6rem; }
+  .change .field { color: var(--amber); }
+  .change .old { color: var(--red); text-decoration: line-through; }
+  .change .new { color: var(--green); }
+  .change time { display: block; opacity: 0.7; margin-bottom: 0.15rem; }
+
+  .empty, .loading { color: var(--muted); padding: 3rem 0; text-align: center; font-size: 0.9rem; }
+  footer { margin-top: 3rem; border-top: 1px solid var(--line); padding-top: 1rem; font-size: 0.7rem; color: var(--muted); }
+  a { color: var(--amber); }
+</style>
+</head>
+<body>
+  <header>
+    <div class="kicker">NMBS / SNCB · Live archive</div>
+    <h1>Disturbance Log</h1>
+    <p class="sub">Polled from the iRail API every 5 minutes. Pick a date to review that day.</p>
+  </header>
+
+  <div class="controls">
+    <div>
+      <label for="dateInput">Choose a date</label>
+      <input type="date" id="dateInput">
+    </div>
+    <div>
+      <label for="dateSelect">Days with data</label>
+      <select id="dateSelect"><option>loading…</option></select>
+    </div>
+  </div>
+
+  <div class="summary" id="summary"></div>
+  <div id="results"><p class="loading">Loading…</p></div>
+
+  <footer>
+    Data source: <a href="https://api.irail.be" target="_blank" rel="noopener">api.irail.be</a> ·
+    Stored disturbances only (planned engineering works excluded).
+  </footer>
+
+<script>
+  const FN = '/.netlify/functions/disturbances';
+  const dateInput = document.getElementById('dateInput');
+  const dateSelect = document.getElementById('dateSelect');
+  const results = document.getElementById('results');
+  const summary = document.getElementById('summary');
+
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  }
+  function fmtTime(iso) {
+    if (!iso) return '—';
+    const d = new Date(iso);
+    return d.toLocaleString('en-GB', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: 'short' });
+  }
+
+  async function loadDates() {
+    try {
+      const res = await fetch(FN);
+      const { dates } = await res.json();
+      dateSelect.innerHTML = '';
+      if (!dates || !dates.length) {
+        dateSelect.innerHTML = '<option value="">no data yet</option>';
+        return null;
+      }
+      for (const d of dates) {
+        const o = document.createElement('option');
+        o.value = d; o.textContent = d;
+        dateSelect.appendChild(o);
+      }
+      return dates[0];
+    } catch (e) {
+      dateSelect.innerHTML = '<option value="">error</option>';
+      return null;
+    }
+  }
+
+  async function loadDay(date) {
+    if (!date) { results.innerHTML = '<p class="empty">No date selected.</p>'; summary.innerHTML = ''; return; }
+    results.innerHTML = '<p class="loading">Loading ' + esc(date) + '…</p>';
+    try {
+      const res = await fetch(FN + '?date=' + encodeURIComponent(date));
+      const records = await res.json();
+      render(records, date);
+    } catch (e) {
+      results.innerHTML = '<p class="empty">Could not load data.</p>';
+      summary.innerHTML = '';
+    }
+  }
+
+  function render(records, date) {
+    if (!Array.isArray(records) || !records.length) {
+      summary.innerHTML = '';
+      results.innerHTML = '<p class="empty">No disturbances recorded on ' + esc(date) + '.</p>';
+      return;
+    }
+    const active = records.filter(r => r.active).length;
+    summary.innerHTML =
+      '<span><b>' + records.length + '</b> total</span>' +
+      '<span><b>' + active + '</b> active</span>' +
+      '<span><b>' + (records.length - active) + '</b> resolved</span>';
+
+    records.sort((a, b) => (b.active - a.active) || (a.firstSeen < b.firstSeen ? -1 : 1));
+
+    results.innerHTML = records.map(r => {
+      const history = (r.history || []).map(h =>
+        '<div class="change"><time>' + esc(fmtTime(h.timestamp)) + '</time>' +
+        '<span class="field">' + esc(h.field) + '</span>: ' +
+        '<span class="old">' + esc(h.oldValue) + '</span> → ' +
+        '<span class="new">' + esc(h.newValue) + '</span></div>'
+      ).join('');
+
+      return '<article class="card ' + (r.active ? '' : 'inactive') + '">' +
+        '<div class="card-top">' +
+          '<h2>' + esc(r.title) + '</h2>' +
+          '<span class="badge ' + (r.active ? 'active' : 'resolved') + '">' +
+            (r.active ? 'active' : 'resolved') + '</span>' +
+        '</div>' +
+        '<p class="desc">' + esc(r.description) + '</p>' +
+        '<div class="times">' +
+          '<span>First seen: ' + esc(fmtTime(r.firstSeen)) + '</span>' +
+          '<span>Last seen: ' + esc(fmtTime(r.lastSeen)) + '</span>' +
+        '</div>' +
+        (history ? '<details class="history"><summary>' + r.history.length +
+          ' change' + (r.history.length === 1 ? '' : 's') + '</summary>' + history + '</details>' : '') +
+      '</article>';
+    }).join('');
+  }
+
+  dateInput.addEventListener('change', () => {
+    if (dateInput.value) { dateSelect.value = dateInput.value; loadDay(dateInput.value); }
+  });
+  dateSelect.addEventListener('change', () => {
+    dateInput.value = dateSelect.value;
+    loadDay(dateSelect.value);
+  });
+
+  (async () => {
+    const latest = await loadDates();
+    if (latest) { dateInput.value = latest; dateSelect.value = latest; }
+    loadDay(latest);
+  })();
+</script>
+</body>
+</html>

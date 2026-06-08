@@ -1,0 +1,11 @@
+# Netlify configuration
+#
+# - Static site is served from ./public
+# - Functions live in ./netlify/functions
+# - The scraper runs on a schedule (every 5 minutes); the schedule is declared
+#   inline in scrape.js via `export const config`, so nothing extra is needed here.
+ 
+[build]
+  publish = "public"
+  functions = "netlify/functions"
+ 
