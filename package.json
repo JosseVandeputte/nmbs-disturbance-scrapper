@@ -1,0 +1,9 @@
+{
+  "name": "irail-disturbances",
+  "version": "1.0.0",
+  "description": "Scrapes iRail disturbances every 5 minutes into daily Netlify Blobs and serves them via a date-picker page.",
+  "private": true,
+  "dependencies": {
+    "@netlify/blobs": "^8.1.0"
+  }
+}
