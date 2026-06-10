@@ -26,6 +26,7 @@ function fmtHour(iso) {
 async function loadDates() {
   try {
     const res = await fetch(FN);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
     const { dates } = await res.json();
     dateSelect.innerHTML = '';
     if (!dates || !dates.length) {
@@ -46,7 +47,10 @@ async function loadDates() {
   }
 }
 
+let loadSeq = 0; // guards against out-of-order responses when switching dates quickly
+
 async function loadDay(date) {
+  const seq = ++loadSeq;
   if (!date) {
     results.innerHTML = '<p class="state-msg">Geen datum geselecteerd.</p>';
     summary.textContent = '';
@@ -55,9 +59,13 @@ async function loadDay(date) {
   results.innerHTML = '<p class="state-msg">Laden…</p>';
   try {
     const res = await fetch(FN + '?date=' + encodeURIComponent(date));
+    if (!res.ok) throw new Error('HTTP ' + res.status);
     const records = await res.json();
+    if (seq !== loadSeq) return;
     render(records, date);
   } catch (e) {
+    if (seq !== loadSeq) return;
+    console.error('loadDay failed:', e);
     results.innerHTML = '<p class="state-msg">Kon geen data laden.</p>';
     summary.textContent = '';
   }
@@ -68,7 +76,7 @@ function renderEntry(r) {
     '<div class="change">' +
       '<time>' + esc(fmtFull(h.timestamp)) + '</time>' +
       '<span class="field">' + esc(h.field) + '</span>: ' +
-      '<span class="old">'   + esc(h.oldValue) + '</span> → ' +
+      '<span class="old">'   + esc(h.oldValue == null ? '—' : h.oldValue) + '</span> → ' +
       '<span class="new">'   + esc(h.newValue)  + '</span>' +
     '</div>'
   ).join('');
@@ -121,7 +129,7 @@ function render(records, date) {
     return;
   }
 
-  const byTime = (a, b) => a.firstSeen < b.firstSeen ? -1 : 1;
+  const byTime = (a, b) => String(a.firstSeen).localeCompare(String(b.firstSeen));
   const activeRecs   = records.filter(r =>  r.active).sort(byTime);
   const resolvedRecs = records.filter(r => !r.active).sort(byTime);
 

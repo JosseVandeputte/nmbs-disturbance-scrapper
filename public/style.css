@@ -127,30 +127,6 @@
   color: var(--text-secondary);
 }
 
-/* ── Badge ───────────────────────────────────────────────── */
-.badge {
-  flex-shrink: 0;
-  font-size: 0.6rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  padding: 0.15rem 0.5rem;
-  border-radius: var(--radius-pill);
-  font-family: 'Inter', sans-serif;
-  white-space: nowrap;
-}
-
-.badge.active {
-  color: var(--status-success);
-  border: 1px solid var(--status-success);
-  background: rgba(16, 185, 129, 0.08);
-}
-
-.badge.resolved {
-  color: var(--text-muted);
-  border: 1px solid var(--border-subtle);
-}
-
 /* ── Description ─────────────────────────────────────────── */
 .desc {
   font-size: 0.875rem;

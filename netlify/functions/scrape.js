@@ -43,7 +43,10 @@ function normalizeResponse(json) {
 }
 
 async function fetchDisturbances() {
-  const res = await fetch(API_URL, { headers: { 'User-Agent': 'irail-disturbances-scraper/1.0' } });
+  const res = await fetch(API_URL, {
+    headers: { 'User-Agent': 'irail-disturbances-scraper/1.0' },
+    signal: AbortSignal.timeout(15000),
+  });
   if (!res.ok) throw new Error('HTTP ' + res.status);
   return res.json();
 }

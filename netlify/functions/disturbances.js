@@ -31,6 +31,9 @@ export default async (req) => {
     }
 
     const records = await store.get(date, { type: 'json' });
+    // Past days never change again, so they can be cached aggressively.
+    const today = new Date().toISOString().slice(0, 10);
+    if (date < today) headers['Cache-Control'] = 'public, max-age=86400';
     return new Response(JSON.stringify(records || []), { status: 200, headers });
   } catch (err) {
     return new Response(JSON.stringify({ error: err.message }), { status: 500, headers });
