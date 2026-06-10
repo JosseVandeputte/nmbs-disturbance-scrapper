@@ -14,6 +14,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="globals.css">
 <link rel="stylesheet" href="style.css">
+<script src="theme.js"></script>
 <script src="script.js" defer></script>
 </head>
 <body>
@@ -22,27 +23,40 @@
     <header class="site-header">
       <div class="header-top">
         <p class="brand-label">NMBS · iRail API · elke 5 min bijgewerkt</p>
-        <a class="page-link" href="trends.html">Trends &amp; archief →</a>
+        <nav class="page-links">
+          <a class="page-link active" href="./" aria-current="page">Logboek</a>
+          <a class="page-link" href="trends.html">Trends</a>
+          <a class="page-link" href="settings.html">Instellingen</a>
+        </nav>
       </div>
       <h1>Storingen Logboek</h1>
       <p class="date-line">
-        Meldingen van
+        Meldingen van <b id="currentDateLabel">—</b>
         <span class="day-nav">
           <button id="prevDay" type="button" aria-label="Vorige dag" disabled>‹</button>
-          <select id="dateSelect"><option>laden…</option></select>
           <button id="nextDay" type="button" aria-label="Volgende dag" disabled>›</button>
         </span>
       </p>
     </header>
 
-    <p class="tally" id="summary"></p>
+    <div class="layout">
 
-    <div class="filter-row" id="filterRow" hidden>
-      <input id="filter" type="search" placeholder="Filter op station, lijn of trefwoord…" autocomplete="off">
-    </div>
+      <aside class="sidebar" id="sidebar" aria-label="Kies een datum">
+        <p class="state-msg">laden…</p>
+      </aside>
 
-    <div class="log-list" id="results">
-      <p class="state-msg">laden…</p>
+      <main class="main">
+        <p class="tally" id="summary"></p>
+
+        <div class="filter-row" id="filterRow" hidden>
+          <input id="filter" type="search" placeholder="Filter op station, lijn of trefwoord…" autocomplete="off">
+        </div>
+
+        <div class="log-list" id="results">
+          <p class="state-msg">laden…</p>
+        </div>
+      </main>
+
     </div>
 
     <footer class="site-footer">

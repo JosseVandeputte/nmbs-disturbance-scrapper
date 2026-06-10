@@ -1,6 +1,7 @@
 const FN = '/.netlify/functions/disturbances';
 
-const dateSelect  = document.getElementById('dateSelect');
+const sidebar     = document.getElementById('sidebar');
+const dateLabel   = document.getElementById('currentDateLabel');
 const results     = document.getElementById('results');
 const summary     = document.getElementById('summary');
 const filterInput = document.getElementById('filter');
@@ -53,6 +54,17 @@ function fmtDur(ms) {
   return h + ' u' + (rest ? ' ' + rest + ' min' : '');
 }
 
+// Noon UTC avoids timezone edge cases when formatting a bare yyyy-mm-dd.
+function dateAtNoon(d) {
+  return new Date(d + 'T12:00:00Z');
+}
+
+function fmtDayLabel(d) {
+  return dateAtNoon(d).toLocaleDateString('nl-BE', {
+    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+  });
+}
+
 // "lijn 50A" / "lijnen 36" mentions in title + description, shown as chips
 function lineTags(r) {
   const text = (r.title || '') + ' ' + (r.description || '');
@@ -75,26 +87,72 @@ function durationLabel(r) {
   return null;
 }
 
+/* ── Sidebar: months with their days, current month open ──── */
+
+function buildSidebar() {
+  if (!state.dates.length) {
+    sidebar.innerHTML = '<p class="state-msg">nog geen data</p>';
+    return;
+  }
+
+  const byMonth = new Map(); // "yyyy-mm" -> [dates, newest first]
+  for (const d of state.dates) {
+    const m = d.slice(0, 7);
+    if (!byMonth.has(m)) byMonth.set(m, []);
+    byMonth.get(m).push(d);
+  }
+
+  const currentMonth = todayKey().slice(0, 7);
+  const today = todayKey();
+  let html = '';
+
+  for (const [month, ds] of byMonth) {
+    const label = dateAtNoon(month + '-15').toLocaleDateString('nl-BE', { month: 'long', year: 'numeric' });
+    html +=
+      '<details class="month" data-month="' + month + '"' + (month === currentMonth ? ' open' : '') + '>' +
+        '<summary>' + esc(label) + '<span class="month-count">' + ds.length + '</span></summary>' +
+        '<ul class="date-list">' +
+          ds.map(d => {
+            const wd = dateAtNoon(d).toLocaleDateString('nl-BE', { weekday: 'short' });
+            return (
+              '<li><button type="button" class="date-link" data-date="' + d + '">' +
+                '<span class="dl-wd">' + esc(wd) + '</span>' + parseInt(d.slice(8), 10) +
+                (d === today ? '<span class="dl-today">vandaag</span>' : '') +
+              '</button></li>'
+            );
+          }).join('') +
+        '</ul>' +
+      '</details>';
+  }
+
+  sidebar.innerHTML = html;
+  sidebar.querySelectorAll('.date-link').forEach(b =>
+    b.addEventListener('click', () => selectDate(b.dataset.date)));
+}
+
+function markSelected(date) {
+  sidebar.querySelectorAll('.date-link.selected').forEach(b => b.classList.remove('selected'));
+  const btn = sidebar.querySelector('.date-link[data-date="' + date + '"]');
+  if (btn) {
+    btn.classList.add('selected');
+    const month = btn.closest('details.month');
+    if (month) month.open = true;
+  }
+}
+
+/* ── Data loading ────────────────────────────────────────── */
+
 async function loadDates() {
   try {
     const res = await fetch(FN);
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const { dates } = await res.json();
-    dateSelect.innerHTML = '';
     state.dates = Array.isArray(dates) ? dates : [];
-    if (!state.dates.length) {
-      dateSelect.innerHTML = '<option value="">nog geen data</option>';
-      return null;
-    }
-    for (const d of state.dates) {
-      const o = document.createElement('option');
-      o.value = d; o.textContent = d;
-      dateSelect.appendChild(o);
-    }
-    return state.dates[0];
+    buildSidebar();
+    return state.dates[0] || null;
   } catch (e) {
     console.error('loadDates failed:', e);
-    dateSelect.innerHTML = '<option value="">fout bij laden</option>';
+    sidebar.innerHTML = '<p class="state-msg">fout bij laden</p>';
     results.innerHTML = '<p class="state-msg">Kan de functie niet bereiken. Draait <code>netlify dev</code>?</p>';
     return null;
   }
@@ -135,6 +193,8 @@ async function loadDay(date, silent) {
     filterRow.hidden = true;
   }
 }
+
+/* ── Rendering ───────────────────────────────────────────── */
 
 function renderEntry(r) {
   const changelog = (r.history || []).map(h =>
@@ -277,30 +337,30 @@ function render(preserveOpen) {
 
 /* ── Date selection, URL state, prev/next ───────────────── */
 
-function updateNavButtons() {
-  const i = state.dates.indexOf(dateSelect.value);
+function updateNavButtons(date) {
+  const i = state.dates.indexOf(date);
   prevBtn.disabled = i === -1 || i >= state.dates.length - 1; // older
   nextBtn.disabled = i <= 0;                                  // newer
 }
 
 function selectDate(date) {
-  dateSelect.value = date;
-  updateNavButtons();
+  state.date = date;
+  markSelected(date);
+  updateNavButtons(date);
+  dateLabel.textContent = fmtDayLabel(date);
   const u = new URL(location);
   u.searchParams.set('date', date);
   history.replaceState(null, '', u);
   loadDay(date, false);
 }
 
-dateSelect.addEventListener('change', () => selectDate(dateSelect.value));
-
 prevBtn.addEventListener('click', () => {
-  const i = state.dates.indexOf(dateSelect.value);
+  const i = state.dates.indexOf(state.date);
   if (i !== -1 && i < state.dates.length - 1) selectDate(state.dates[i + 1]);
 });
 
 nextBtn.addEventListener('click', () => {
-  const i = state.dates.indexOf(dateSelect.value);
+  const i = state.dates.indexOf(state.date);
   if (i > 0) selectDate(state.dates[i - 1]);
 });
 

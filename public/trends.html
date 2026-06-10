@@ -13,6 +13,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="globals.css">
 <link rel="stylesheet" href="style.css">
+<script src="theme.js"></script>
 <script src="trends.js" defer></script>
 </head>
 <body>
@@ -21,7 +22,11 @@
     <header class="site-header">
       <div class="header-top">
         <p class="brand-label">NMBS · iRail API · trends &amp; archief</p>
-        <a class="page-link" href="./">← Logboek</a>
+        <nav class="page-links">
+          <a class="page-link" href="./">Logboek</a>
+          <a class="page-link active" href="trends.html" aria-current="page">Trends</a>
+          <a class="page-link" href="settings.html">Instellingen</a>
+        </nav>
       </div>
       <h1>Trends</h1>
       <p class="date-line">Storingen over de laatste 90 dagen, samengevat.</p>

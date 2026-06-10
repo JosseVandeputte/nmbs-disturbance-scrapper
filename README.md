@@ -13,8 +13,9 @@ works are skipped.
 ```
 netlify.toml                      # build + functions config
 package.json                      # @netlify/blobs dependency
-public/index.html                 # daily log viewer (filter, prev/next day, auto-refresh)
+public/index.html                 # daily log viewer (month/date sidebar, filter, auto-refresh)
 public/trends.html                # trends dashboard + archive search
+public/settings.html              # theme preference (system / light / dark)
 netlify/functions/scrape.js       # scheduled scraper (every 5 min) -> Blobs
 netlify/functions/disturbances.js # GET dates / GET ?date= -> { records, lastPolled }
 netlify/functions/stats.js        # GET ?days=90 -> per-day counts, weekday/hour distribution
@@ -26,6 +27,8 @@ netlify/functions/rss.js          # RSS 2.0 feed of today's disturbances
 
 - **Daily log** with per-disturbance change history, duration, and "lijn"-chips
   extracted from the text; filterable; linkable via `/?date=YYYY-MM-DD`.
+- **Month/date sidebar**: days grouped per collapsible month (current month
+  open), with prev/next-day buttons in the header.
 - **Auto-refresh**: today's view re-fetches every 2 minutes while the tab is
   visible; the tally shows when the scraper last polled.
 - **Trends page**: disturbances per day (last 30 days), busiest weekday and
@@ -34,7 +37,8 @@ netlify/functions/rss.js          # RSS 2.0 feed of today's disturbances
   active in yesterday's blob get `carriedOver: true` instead of staying
   "active" forever; they reappear fresh in the new day.
 - **RSS feed** at `/.netlify/functions/rss` for passive following.
-- **Dark mode** via `prefers-color-scheme`; installable (web app manifest).
+- **Dark mode**: follows the system by default; override on the settings page
+  (system / light / dark, stored in localStorage). Installable (web app manifest).
 
 ## Deploy
 

@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#006ab3">
+<title>Instellingen — NMBS Storingenlog</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="globals.css">
+<link rel="stylesheet" href="style.css">
+<script src="theme.js"></script>
+<script src="settings.js" defer></script>
+</head>
+<body>
+  <div class="page-shell">
+
+    <header class="site-header">
+      <div class="header-top">
+        <p class="brand-label">NMBS · Storingenlog</p>
+        <nav class="page-links">
+          <a class="page-link" href="./">Logboek</a>
+          <a class="page-link" href="trends.html">Trends</a>
+          <a class="page-link active" href="settings.html" aria-current="page">Instellingen</a>
+        </nav>
+      </div>
+      <h1>Instellingen</h1>
+    </header>
+
+    <section class="section">
+      <h2 class="section-title">Weergave</h2>
+      <div class="theme-options" id="themeOptions">
+        <label>
+          <input type="radio" name="theme" value="system">
+          <span class="theme-name">Systeem</span>
+          <span class="theme-desc">volgt je toestel</span>
+        </label>
+        <label>
+          <input type="radio" name="theme" value="light">
+          <span class="theme-name">Licht</span>
+          <span class="theme-desc">altijd licht</span>
+        </label>
+        <label>
+          <input type="radio" name="theme" value="dark">
+          <span class="theme-name">Donker</span>
+          <span class="theme-desc">altijd donker</span>
+        </label>
+      </div>
+      <p class="setting-hint">De keuze wordt lokaal in je browser bewaard.</p>
+    </section>
+
+    <footer class="site-footer">
+      Databron: <a href="https://api.irail.be" target="_blank" rel="noopener">api.irail.be</a> —
+      enkel onverwachte storingen, geplande werken niet inbegrepen ·
+      <a href="/.netlify/functions/rss">RSS</a>
+    </footer>
+
+  </div>
+</body>
+</html>

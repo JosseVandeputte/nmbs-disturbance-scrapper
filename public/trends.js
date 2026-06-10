@@ -11,6 +11,7 @@ const searchInput   = document.getElementById('searchInput');
 const searchResults = document.getElementById('searchResults');
 
 const WEEKDAYS = ['ma', 'di', 'wo', 'do', 'vr', 'za', 'zo'];
+const WEEKDAYS_FULL = ['maandag', 'dinsdag', 'woensdag', 'donderdag', 'vrijdag', 'zaterdag', 'zondag'];
 
 function esc(s) {
   return String(s == null ? '' : s)
@@ -30,7 +31,13 @@ function fmtDate(iso) {
   return new Date(iso + 'T12:00:00Z').toLocaleDateString('nl-BE', { day: 'numeric', month: 'short' });
 }
 
-// Generic bar strip: items = [{label, value, title, href}]
+function fmtDayFull(iso) {
+  return new Date(iso + 'T12:00:00Z').toLocaleDateString('nl-BE', {
+    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+  });
+}
+
+// Generic bar strip: items = [{label, value, tip, href}]
 function barChart(items, opts) {
   const max = Math.max(1, ...items.map(i => i.value));
   const labelEvery = opts && opts.labelEvery ? opts.labelEvery : 1;
@@ -42,11 +49,53 @@ function barChart(items, opts) {
           '<span class="bar-fill" style="height:' + Math.max(h, it.value ? 3 : 1) + '%"></span>' +
           '<span class="bar-label">' + (idx % labelEvery === 0 ? esc(it.label) : '') + '</span>';
         return it.href
-          ? '<a class="bar" href="' + esc(it.href) + '" title="' + esc(it.title) + '">' + inner + '</a>'
-          : '<span class="bar" title="' + esc(it.title) + '">' + inner + '</span>';
+          ? '<a class="bar" href="' + esc(it.href) + '">' + inner + '</a>'
+          : '<span class="bar">' + inner + '</span>';
       }).join('') +
     '</div>'
   );
+}
+
+/* ── Hover tooltip on chart columns ──────────────────────── */
+
+const chartTip = document.createElement('div');
+chartTip.className = 'chart-tip';
+chartTip.hidden = true;
+document.body.appendChild(chartTip);
+
+function positionTip(e) {
+  const pad = 14;
+  const rect = chartTip.getBoundingClientRect();
+  let x = e.clientX + pad;
+  let y = e.clientY - rect.height - pad;
+  if (x + rect.width > window.innerWidth - 8) x = e.clientX - rect.width - pad;
+  if (y < 8) y = e.clientY + pad;
+  chartTip.style.left = x + 'px';
+  chartTip.style.top = y + 'px';
+}
+
+// Renders bars into a container and wires up the shared tooltip; each item's
+// `tip` (HTML) is attached to its bar element.
+function renderBars(container, items, opts) {
+  container.innerHTML = barChart(items, opts);
+  container.querySelectorAll('.bar').forEach((bar, i) => { bar._tip = items[i].tip; });
+
+  container.addEventListener('mousemove', (e) => {
+    const bar = e.target.closest('.bar');
+    if (!bar || !bar._tip) { chartTip.hidden = true; return; }
+    if (chartTip.innerHTML !== bar._tip) chartTip.innerHTML = bar._tip;
+    chartTip.hidden = false;
+    positionTip(e);
+  });
+  container.addEventListener('mouseleave', () => { chartTip.hidden = true; });
+}
+
+function pct(value, total) {
+  return total > 0 ? Math.round((value / total) * 100) + '%' : null;
+}
+
+function nMeldingen(n) {
+  return '<b>' + n + '</b> ' + (n === 1 ? 'melding' : 'meldingen');
 }
 
 async function loadStats() {
@@ -70,31 +119,43 @@ async function loadStats() {
     }
 
     const last30 = days.slice(-30);
-    chartDays.innerHTML = barChart(
-      last30.map((d, i) => ({
-        label: (i === 0 || i === last30.length - 1) ? fmtDate(d.date) : '',
-        value: d.total,
-        title: d.date + ': ' + d.total + (d.total === 1 ? ' storing' : ' storingen'),
-        href: './?date=' + d.date,
-      }))
-    );
+    renderBars(chartDays, last30.map((d, i) => ({
+      label: (i === 0 || i === last30.length - 1) ? fmtDate(d.date) : '',
+      value: d.total,
+      href: './?date=' + d.date,
+      tip:
+        '<b>' + esc(fmtDayFull(d.date)) + '</b>' +
+        '<span>' + nMeldingen(d.total) + '</span>' +
+        (d.total
+          ? '<span>' + d.active + ' actief · ' + d.resolved + ' opgelost' +
+            (d.carriedOver ? ' · ' + d.carriedOver + ' doorlopend' : '') + '</span>'
+          : '') +
+        (d.avgDuration ? '<span>gem. duur <b>' + esc(fmtDur(d.avgDuration)) + '</b></span>' : '') +
+        (d.maxDuration ? '<span>langste <b>' + esc(fmtDur(d.maxDuration)) + '</b></span>' : '') +
+        '<span class="tip-hint">klik om deze dag te openen</span>',
+    })));
 
-    chartWeekdays.innerHTML = barChart(
-      (stats.byWeekday || []).map((v, i) => ({
-        label: WEEKDAYS[i],
-        value: v,
-        title: WEEKDAYS[i] + ': ' + v + (v === 1 ? ' storing' : ' storingen'),
-      }))
-    );
+    const byWeekday = stats.byWeekday || [];
+    const wdTotal = byWeekday.reduce((a, b) => a + b, 0);
+    renderBars(chartWeekdays, byWeekday.map((v, i) => ({
+      label: WEEKDAYS[i],
+      value: v,
+      tip:
+        '<b>' + WEEKDAYS_FULL[i] + '</b>' +
+        '<span>' + nMeldingen(v) + '</span>' +
+        (pct(v, wdTotal) ? '<span>' + pct(v, wdTotal) + ' van alle meldingen</span>' : ''),
+    })));
 
-    chartHours.innerHTML = barChart(
-      (stats.byHour || []).map((v, i) => ({
-        label: String(i),
-        value: v,
-        title: String(i).padStart(2, '0') + ':00 — ' + v + (v === 1 ? ' storing' : ' storingen'),
-      })),
-      { labelEvery: 6 }
-    );
+    const byHour = stats.byHour || [];
+    const hTotal = byHour.reduce((a, b) => a + b, 0);
+    renderBars(chartHours, byHour.map((v, i) => ({
+      label: String(i),
+      value: v,
+      tip:
+        '<b>' + String(i).padStart(2, '0') + ':00 – ' + String((i + 1) % 24).padStart(2, '0') + ':00</b>' +
+        '<span>' + nMeldingen(v) + '</span>' +
+        (pct(v, hTotal) ? '<span>' + pct(v, hTotal) + ' van alle meldingen</span>' : ''),
+    })), { labelEvery: 6 });
 
     const longest = Array.isArray(stats.longest) ? stats.longest : [];
     longestEl.innerHTML = longest.length
