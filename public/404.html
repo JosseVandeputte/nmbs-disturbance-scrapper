@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#006ab3">
+<title>Pagina niet gevonden · NMBS Storingenlog</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="globals.css">
+<link rel="stylesheet" href="style.css">
+<script src="theme.js"></script>
+<style>
+  .error-page {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2rem;
+    padding: 3rem 0 6rem;
+    border-top: 1px solid var(--border-subtle);
+  }
+
+  .error-code {
+    font-family: 'Outfit', sans-serif;
+    font-size: clamp(10rem, 28vw, 18rem);
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -0.05em;
+    color: var(--brand-blue);
+    opacity: 0.08;
+    user-select: none;
+    pointer-events: none;
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+
+  .error-body {
+    position: relative;
+    z-index: 1;
+  }
+
+  .error-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    min-height: 280px;
+    overflow: hidden;
+  }
+
+  .error-title {
+    font-family: 'Outfit', sans-serif;
+    font-size: clamp(1.6rem, 5vw, 2.5rem);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    color: var(--text-primary);
+    margin-bottom: 0.6rem;
+  }
+
+  .error-desc {
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+    font-family: 'Inter', sans-serif;
+    line-height: 1.6;
+    margin-bottom: 2rem;
+    max-width: 38ch;
+  }
+
+  .error-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.6rem 1.2rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    font-family: 'Inter', sans-serif;
+    color: #fff;
+    background: var(--brand-blue);
+    border-radius: var(--radius-sm);
+    text-decoration: none;
+    transition: background 0.15s ease;
+  }
+
+  .error-back:hover {
+    background: var(--brand-blue-hover);
+  }
+</style>
+</head>
+<body>
+  <div class="page-shell">
+
+    <header class="site-header">
+      <div class="header-top">
+        <p class="brand-label">NMBS · iRail API · elke 5 min bijgewerkt</p>
+        <nav class="page-links">
+          <a class="page-link" href="./">Logboek</a>
+          <a class="page-link" href="trends.html">Trends</a>
+          <a class="page-link" href="settings.html">Instellingen</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <div class="error-wrapper">
+        <span class="error-code" aria-hidden="true">404</span>
+        <div class="error-body">
+          <h1 class="error-title">Pagina niet gevonden</h1>
+          <p class="error-desc">Deze pagina bestaat niet of werd verplaatst. Controleer de URL of ga terug naar het logboek.</p>
+          <a class="error-back" href="./">← Terug naar het logboek</a>
+        </div>
+      </div>
+    </main>
+
+    <footer class="site-footer">
+      Databron: <a href="https://api.irail.be" target="_blank" rel="noopener">api.irail.be</a> —
+      enkel onverwachte storingen, geplande werken niet inbegrepen ·
+      <a href="/.netlify/functions/rss">RSS</a>
+    </footer>
+
+  </div>
+</body>
+</html>
