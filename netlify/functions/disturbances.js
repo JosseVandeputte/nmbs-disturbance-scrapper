@@ -2,7 +2,7 @@
 //
 // HTTP endpoint for the front-end.
 //   GET /.netlify/functions/disturbances                 -> { dates: [...] }
-//   GET /.netlify/functions/disturbances?date=YYYY-MM-DD -> [ ...records ]
+//   GET /.netlify/functions/disturbances?date=YYYY-MM-DD -> { records: [...], lastPolled: iso|null }
 //
 // Modern Netlify function signature so the Blobs environment is injected.
 
@@ -30,11 +30,15 @@ export default async (req) => {
       return new Response(JSON.stringify({ error: 'Invalid date format, expected YYYY-MM-DD' }), { status: 400, headers });
     }
 
-    const records = await store.get(date, { type: 'json' });
+    const entry = await store.getWithMetadata(date, { type: 'json' });
+    const records = entry && Array.isArray(entry.data) ? entry.data : [];
+    const lastPolled = (entry && entry.metadata && entry.metadata.lastPolled) || null;
+
     // Past days never change again, so they can be cached aggressively.
     const today = new Date().toISOString().slice(0, 10);
     if (date < today) headers['Cache-Control'] = 'public, max-age=86400';
-    return new Response(JSON.stringify(records || []), { status: 200, headers });
+
+    return new Response(JSON.stringify({ records, lastPolled }), { status: 200, headers });
   } catch (err) {
     return new Response(JSON.stringify({ error: err.message }), { status: 500, headers });
   }

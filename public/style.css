@@ -10,6 +10,23 @@
   margin-bottom: 2rem;
 }
 
+.header-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.page-link {
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-family: 'Inter', sans-serif;
+  white-space: nowrap;
+}
+
 .brand-label {
   font-size: 0.68rem;
   font-weight: 600;
@@ -52,6 +69,35 @@
   cursor: pointer;
 }
 
+/* Prev/next day buttons around the select */
+.day-nav {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.day-nav button {
+  font-size: 1rem;
+  line-height: 1;
+  padding: 0.25rem 0.6rem;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  background: var(--bg-surface);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.day-nav button:hover:not(:disabled) {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.day-nav button:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
 /* ── Tally ───────────────────────────────────────────────── */
 .tally {
   font-size: 0.8rem;
@@ -70,6 +116,18 @@
 .tally b {
   color: var(--text-primary);
   font-weight: 600;
+}
+
+/* ── Filter ──────────────────────────────────────────────── */
+.filter-row {
+  margin: 0.75rem 0 0.25rem;
+}
+
+.filter-row input {
+  padding: 0.5rem 0.85rem;
+  font-size: 0.85rem;
+  border-radius: var(--radius-sm);
+  box-shadow: none;
 }
 
 /* ── Log list ────────────────────────────────────────────── */
@@ -125,6 +183,33 @@
 
 .log-entry.inactive .entry-head h2 {
   color: var(--text-secondary);
+}
+
+/* Line chips next to the title */
+.chips {
+  display: flex;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+  flex-shrink: 0;
+  padding-top: 0.1rem;
+}
+
+.chip {
+  font-size: 0.62rem;
+  font-weight: 600;
+  font-family: 'Inter', sans-serif;
+  color: var(--brand-blue);
+  border: 1px solid var(--border-glow);
+  background: var(--accent-glow);
+  border-radius: var(--radius-pill);
+  padding: 0.1rem 0.5rem;
+  white-space: nowrap;
+  line-height: 1.5;
+}
+
+.times .duration {
+  color: var(--text-secondary);
+  font-weight: 500;
 }
 
 /* ── Description ─────────────────────────────────────────── */
@@ -269,6 +354,149 @@
   color: var(--text-muted);
   font-size: 0.875rem;
   font-family: 'Inter', sans-serif;
+}
+
+/* ── Trends page: sections + charts ──────────────────────── */
+.section {
+  margin-top: 2.5rem;
+}
+
+.section-title {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-family: 'Inter', sans-serif;
+  color: var(--text-secondary);
+  margin-bottom: 1rem;
+}
+
+.section-sub {
+  font-weight: 500;
+  color: var(--text-muted);
+  text-transform: none;
+  letter-spacing: 0.02em;
+}
+
+.chart {
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: var(--bg-surface);
+  padding: 1.25rem 1.25rem 0.75rem;
+}
+
+.bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 140px;
+}
+
+.chart-small .bars {
+  height: 90px;
+}
+
+.bar {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: stretch;
+  height: 100%;
+  min-width: 0;
+  text-decoration: none;
+}
+
+.bar-fill {
+  display: block;
+  background: var(--brand-blue);
+  border-radius: 2px 2px 0 0;
+  opacity: 0.75;
+  transition: opacity 0.15s ease;
+}
+
+.bar:hover .bar-fill {
+  opacity: 1;
+}
+
+.bar-label {
+  font-size: 0.6rem;
+  font-family: 'Inter', sans-serif;
+  color: var(--text-muted);
+  text-align: center;
+  padding-top: 0.3rem;
+  white-space: nowrap;
+  overflow: visible;
+  height: 1.2rem;
+}
+
+/* ── Trends page: search + longest ───────────────────────── */
+.search-form {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.search-form input {
+  flex: 1;
+  padding: 0.5rem 0.85rem;
+  font-size: 0.85rem;
+  border-radius: var(--radius-sm);
+  box-shadow: none;
+}
+
+.search-form button {
+  padding: 0.5rem 1.1rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  font-family: 'Inter', sans-serif;
+  color: #fff;
+  background: var(--brand-blue);
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.search-form button:hover {
+  background: var(--brand-blue-hover);
+}
+
+.search-count {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  font-family: 'Inter', sans-serif;
+  margin-bottom: 0.5rem;
+}
+
+.search-hit {
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.search-hit.inactive {
+  opacity: 0.75;
+}
+
+.search-hit time {
+  display: block;
+  font-size: 0.7rem;
+  font-family: 'Inter', sans-serif;
+  color: var(--text-muted);
+  margin-bottom: 0.25rem;
+}
+
+.search-hit h3 {
+  font-size: 0.9rem;
+  font-weight: 600;
+  line-height: 1.35;
+  margin-bottom: 0.3rem;
+}
+
+.search-hit p {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  line-height: 1.55;
 }
 
 /* ── Footer ──────────────────────────────────────────────── */

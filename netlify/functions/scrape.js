@@ -4,7 +4,12 @@
 // and updates the current day's record in a Netlify Blobs store.
 //
 // Storage model: one blob per day, keyed by "yyyy-mm-dd". Each blob holds an
-// array of disturbance records.
+// array of disturbance records; the blob metadata carries `lastPolled` so the
+// front-end can distinguish "a calm day" from "the scraper never ran".
+//
+// On the first poll of a new UTC day, the previous day's blob is closed out:
+// records still marked active get `carriedOver: true` (the disturbance ran
+// past midnight; it reappears as a fresh record in the new day's blob).
 //
 // Only type === "disturbance" items are stored (planned works are skipped).
 //
@@ -51,6 +56,34 @@ async function fetchDisturbances() {
   return res.json();
 }
 
+// Mark records that were still active at the end of the previous day as
+// carried over. lastSeen is left untouched: it reflects the last real
+// observation, so durations stay honest.
+async function closeOutPreviousDay(store, key, now) {
+  let prev;
+  try {
+    prev = await store.get(key, { type: 'json' });
+  } catch (err) {
+    console.error('[' + now + '] could not read previous day ' + key + ':', err.message);
+    return;
+  }
+  if (!Array.isArray(prev)) return;
+
+  let changed = 0;
+  for (const r of prev) {
+    if (r.active !== false) {
+      r.history.push({ timestamp: now, field: 'carriedOver', oldValue: null, newValue: true });
+      r.active = false;
+      r.carriedOver = true;
+      changed++;
+    }
+  }
+  if (changed) {
+    await store.setJSON(key, prev, { metadata: { finalized: true } });
+    console.log('[' + now + '] closed out ' + key + ' — carried over: ' + changed);
+  }
+}
+
 export default async () => {
   const nowDate = new Date();
   const now = nowDate.toISOString();
@@ -70,11 +103,17 @@ export default async () => {
   const fetchedById = new Map(fetched.map((f) => [f.id, f]));
 
   let records = [];
+  let firstPollOfDay = false;
   try {
     const existing = await store.get(key, { type: 'json' });
     if (Array.isArray(existing)) records = existing;
+    else firstPollOfDay = existing === null || existing === undefined;
   } catch (err) {
     console.error('[' + now + '] could not read blob ' + key + ':', err.message);
+  }
+
+  if (firstPollOfDay) {
+    await closeOutPreviousDay(store, dayKey(new Date(nowDate.getTime() - 86400000)), now);
   }
 
   const byId = new Map(records.map((r) => [r.id, r]));
@@ -137,7 +176,7 @@ export default async () => {
     }
   }
 
-  await store.setJSON(key, records);
+  await store.setJSON(key, records, { metadata: { lastPolled: now } });
 
   console.log(
     '[' + now + '] ' + key + ' — new: ' + countNew + ', updated: ' + countUpdated +

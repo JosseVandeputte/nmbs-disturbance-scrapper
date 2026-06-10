@@ -3,7 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Logboek van onverwachte storingen op het NMBS-net, elke 5 minuten bijgewerkt via de iRail API.">
+<meta name="theme-color" content="#006ab3">
 <title>NMBS Storingenlog</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="alternate" type="application/rss+xml" title="NMBS Storingenlog" href="/.netlify/functions/rss">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@600;700&display=swap" rel="stylesheet">
@@ -15,15 +20,26 @@
   <div class="page-shell">
 
     <header class="site-header">
-      <p class="brand-label">NMBS · iRail API · elke 5 min bijgewerkt</p>
+      <div class="header-top">
+        <p class="brand-label">NMBS · iRail API · elke 5 min bijgewerkt</p>
+        <a class="page-link" href="trends.html">Trends &amp; archief →</a>
+      </div>
       <h1>Storingen Logboek</h1>
       <p class="date-line">
         Meldingen van
-        <select id="dateSelect"><option>laden…</option></select>
+        <span class="day-nav">
+          <button id="prevDay" type="button" aria-label="Vorige dag" disabled>‹</button>
+          <select id="dateSelect"><option>laden…</option></select>
+          <button id="nextDay" type="button" aria-label="Volgende dag" disabled>›</button>
+        </span>
       </p>
     </header>
 
     <p class="tally" id="summary"></p>
+
+    <div class="filter-row" id="filterRow" hidden>
+      <input id="filter" type="search" placeholder="Filter op station, lijn of trefwoord…" autocomplete="off">
+    </div>
 
     <div class="log-list" id="results">
       <p class="state-msg">laden…</p>
@@ -31,7 +47,8 @@
 
     <footer class="site-footer">
       Databron: <a href="https://api.irail.be" target="_blank" rel="noopener">api.irail.be</a> —
-      enkel onverwachte storingen, geplande werken niet inbegrepen.
+      enkel onverwachte storingen, geplande werken niet inbegrepen ·
+      <a href="/.netlify/functions/rss">RSS</a>
     </footer>
 
   </div>

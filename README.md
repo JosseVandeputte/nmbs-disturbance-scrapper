@@ -13,10 +13,28 @@ works are skipped.
 ```
 netlify.toml                      # build + functions config
 package.json                      # @netlify/blobs dependency
-public/index.html                 # the date-picker viewer (static site)
+public/index.html                 # daily log viewer (filter, prev/next day, auto-refresh)
+public/trends.html                # trends dashboard + archive search
 netlify/functions/scrape.js       # scheduled scraper (every 5 min) -> Blobs
-netlify/functions/disturbances.js # HTTP API the page calls to read data
+netlify/functions/disturbances.js # GET dates / GET ?date= -> { records, lastPolled }
+netlify/functions/stats.js        # GET ?days=90 -> per-day counts, weekday/hour distribution
+netlify/functions/search.js       # GET ?q=term -> full-text search across stored days
+netlify/functions/rss.js          # RSS 2.0 feed of today's disturbances
 ```
+
+## Features
+
+- **Daily log** with per-disturbance change history, duration, and "lijn"-chips
+  extracted from the text; filterable; linkable via `/?date=YYYY-MM-DD`.
+- **Auto-refresh**: today's view re-fetches every 2 minutes while the tab is
+  visible; the tally shows when the scraper last polled.
+- **Trends page**: disturbances per day (last 30 days), busiest weekday and
+  hour (Belgian time), longest disturbances, and full-text archive search.
+- **Carry-over at midnight**: on the first poll of a new UTC day, records still
+  active in yesterday's blob get `carriedOver: true` instead of staying
+  "active" forever; they reappear fresh in the new day.
+- **RSS feed** at `/.netlify/functions/rss` for passive following.
+- **Dark mode** via `prefers-color-scheme`; installable (web app manifest).
 
 ## Deploy
 
