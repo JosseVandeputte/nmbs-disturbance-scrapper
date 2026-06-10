@@ -1,0 +1,115 @@
+:root {
+  --bg-base: #f8fafc;
+  --bg-surface: #ffffff;
+  --bg-glass: #ffffff;
+  --bg-glass-hover: #f1f5f9;
+  --bg-hover: #f1f5f9;
+
+  --border-subtle: #e2e8f0;
+  --border-glow: rgba(0, 106, 179, 0.15);
+
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
+
+  --brand-blue: #006ab3;
+  --brand-blue-hover: #005A99;
+
+  --status-success: #10b981;
+  --status-warning: #f59e0b;
+  --status-danger: #ef4444;
+
+  --accent-cyan: var(--brand-blue);
+  --accent-blue: var(--brand-blue);
+  --accent-glow: rgba(0, 106, 179, 0.15);
+
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-pill: 99px;
+
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.03);
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: 'Inter', -apple-system, sans-serif;
+  background-color: var(--bg-base);
+  color: var(--text-primary);
+  line-height: 1.6;
+  font-size: 1rem;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+::selection {
+  background-color: var(--brand-blue);
+  color: #fff;
+}
+
+*:focus-visible {
+  outline: 2px solid var(--brand-blue);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+h1, h2, h3, h4 {
+  font-family: 'Outfit', sans-serif;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  color: var(--text-primary);
+}
+h1 { font-size: clamp(2rem, 5vw, 3rem); font-weight: 700; }
+h2 { font-size: clamp(1.5rem, 3vw, 2rem); font-weight: 600; }
+h3 { font-size: 1.25rem; font-weight: 600; }
+
+a {
+  text-decoration: none;
+  color: var(--brand-blue);
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+a:hover { color: var(--brand-blue-hover); }
+
+:where(input[type="text"], input[type="date"], select) {
+  width: 100%;
+  padding: 0.85rem 1.25rem;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  font-size: 1rem;
+  font-family: 'Inter', sans-serif;
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  transition: all 0.2s ease;
+  box-shadow: var(--shadow-sm);
+}
+
+:where(input[type="text"]:focus, input[type="date"]:focus, select:focus) {
+  outline: none;
+  background: #fff;
+  border-color: var(--brand-blue);
+  box-shadow: 0 0 0 3px rgba(0, 106, 179, 0.15);
+}
+
+:where(input::placeholder) { color: var(--text-muted); }
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-fadeInUp { animation: fadeInUp 0.4s ease-out forwards; }
+
+.highlight { color: var(--brand-blue); font-weight: 700; }

@@ -4,6 +4,9 @@
   "description": "Scrapes iRail disturbances every 5 minutes into daily Netlify Blobs and serves them via a date-picker page.",
   "type": "module",
   "private": true,
+  "scripts": {
+    "dev": "netlify dev"
+  },
   "dependencies": {
     "@netlify/blobs": "^8.1.0"
   }

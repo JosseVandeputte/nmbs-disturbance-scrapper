@@ -1,0 +1,319 @@
+/* ── Shell ──────────────────────────────────────────────── */
+.page-shell {
+  max-width: 780px;
+  margin: 0 auto;
+  padding: 4rem 1.5rem 6rem;
+}
+
+/* ── Header ─────────────────────────────────────────────── */
+.site-header {
+  margin-bottom: 2rem;
+}
+
+.brand-label {
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--brand-blue);
+  font-family: 'Inter', sans-serif;
+  margin-bottom: 1rem;
+}
+
+.site-header h1 {
+  font-size: clamp(3.5rem, 15vw, 6rem);
+  font-weight: 700;
+  line-height: 0.9;
+  letter-spacing: -0.04em;
+  color: var(--text-primary);
+  margin-bottom: 1.25rem;
+}
+
+/* Date line — the select lives inside a sentence */
+.date-line {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  font-family: 'Inter', sans-serif;
+  flex-wrap: wrap;
+}
+
+.date-line select {
+  width: auto;
+  padding: 0.2rem 0.6rem;
+  font-size: 0.95rem;
+  font-family: 'Inter', sans-serif;
+  border-radius: var(--radius-sm);
+  box-shadow: none;
+  color: var(--text-primary);
+  border-color: var(--border-subtle);
+  cursor: pointer;
+}
+
+/* ── Tally ───────────────────────────────────────────────── */
+.tally {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  font-family: 'Inter', sans-serif;
+  padding: 0.75rem 0;
+  border-top: 1px solid var(--border-subtle);
+  border-bottom: 1px solid var(--border-subtle);
+  margin-bottom: 0;
+}
+
+.tally:empty {
+  display: none;
+}
+
+.tally b {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+/* ── Log list ────────────────────────────────────────────── */
+.log-list {
+  margin-top: 0;
+}
+
+/* ── Log entry ───────────────────────────────────────────── */
+.log-entry {
+  display: grid;
+  grid-template-columns: 3rem 1fr;
+  gap: 0 1.75rem;
+  padding: 1.5rem 0;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.log-entry.inactive {
+  opacity: 0.65;
+}
+
+/* Time in the left gutter */
+.entry-time {
+  font-size: 0.72rem;
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  color: var(--text-muted);
+  letter-spacing: 0.01em;
+  line-height: 1.4;
+  text-align: right;
+  padding-top: 0.2rem;
+}
+
+/* Right column */
+.entry-content {
+  min-width: 0;
+}
+
+.entry-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.entry-head h2 {
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+}
+
+.log-entry.inactive .entry-head h2 {
+  color: var(--text-secondary);
+}
+
+/* ── Badge ───────────────────────────────────────────────── */
+.badge {
+  flex-shrink: 0;
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0.15rem 0.5rem;
+  border-radius: var(--radius-pill);
+  font-family: 'Inter', sans-serif;
+  white-space: nowrap;
+}
+
+.badge.active {
+  color: var(--status-success);
+  border: 1px solid var(--status-success);
+  background: rgba(16, 185, 129, 0.08);
+}
+
+.badge.resolved {
+  color: var(--text-muted);
+  border: 1px solid var(--border-subtle);
+}
+
+/* ── Description ─────────────────────────────────────────── */
+.desc {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  line-height: 1.65;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+  margin-bottom: 0.75rem;
+}
+
+/* ── Timestamps ──────────────────────────────────────────── */
+.times {
+  display: flex;
+  gap: 1.25rem;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  flex-wrap: wrap;
+  font-family: 'Inter', sans-serif;
+}
+
+/* ── History ─────────────────────────────────────────────── */
+.history {
+  margin-top: 0.9rem;
+  padding-top: 0.9rem;
+  border-top: 1px dashed var(--border-subtle);
+}
+
+.history > summary {
+  cursor: pointer;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--brand-blue);
+  user-select: none;
+  font-family: 'Inter', sans-serif;
+  list-style: none;
+}
+
+.history > summary::-webkit-details-marker { display: none; }
+.history > summary:hover { color: var(--brand-blue-hover); }
+
+.change {
+  margin-top: 0.45rem;
+  padding: 0.5rem 0.7rem;
+  background: var(--bg-glass-hover);
+  border-radius: var(--radius-sm);
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+}
+
+.change time {
+  display: block;
+  font-size: 0.66rem;
+  color: var(--text-muted);
+  margin-bottom: 0.2rem;
+}
+
+.change .field { font-weight: 600; color: var(--text-secondary); }
+.change .old   { color: var(--status-danger); text-decoration: line-through; }
+.change .new   { color: var(--status-success); }
+
+/* ── Groups ──────────────────────────────────────────────── */
+.group {
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: var(--bg-surface);
+  margin-bottom: 0.75rem;
+  overflow: hidden;
+}
+
+.group-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1.25rem;
+  cursor: pointer;
+  user-select: none;
+  list-style: none;
+  background: var(--bg-glass-hover);
+  transition: background 0.15s ease;
+}
+
+.group-header::-webkit-details-marker { display: none; }
+.group-header:hover { background: var(--bg-hover); }
+
+.group[open] > .group-header {
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.group-title {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-family: 'Inter', sans-serif;
+  color: var(--text-secondary);
+}
+
+.group-right {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.group-count {
+  font-size: 0.7rem;
+  font-weight: 600;
+  font-family: 'Inter', sans-serif;
+  color: var(--text-muted);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-pill);
+  padding: 0.1rem 0.5rem;
+  line-height: 1.4;
+}
+
+.group-chevron {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  transition: transform 0.2s ease;
+  display: inline-block;
+  line-height: 1;
+}
+
+.group[open] .group-chevron {
+  transform: rotate(90deg);
+}
+
+.group-entries {
+  padding: 0 1.25rem;
+}
+
+.group-entries .log-entry:last-child {
+  border-bottom: none;
+}
+
+/* ── States ──────────────────────────────────────────────── */
+.state-msg {
+  padding: 4rem 0;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.875rem;
+  font-family: 'Inter', sans-serif;
+}
+
+/* ── Footer ──────────────────────────────────────────────── */
+.site-footer {
+  margin-top: 4rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border-subtle);
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-family: 'Inter', sans-serif;
+}
+
+/* ── Responsive ──────────────────────────────────────────── */
+@media (max-width: 520px) {
+  .log-entry {
+    grid-template-columns: 2.5rem 1fr;
+    gap: 0 1.25rem;
+  }
+
+  .entry-head {
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+}
