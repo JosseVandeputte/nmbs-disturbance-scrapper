@@ -1,7 +1,7 @@
 {
   "name": "NMBS Storingenlog",
   "short_name": "Storingen",
-  "description": "Logboek van onverwachte storingen op het NMBS-net, elke 5 minuten bijgewerkt via de iRail API.",
+  "description": "Logboek van onverwachte storingen op het NMBS-net via de iRail API.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#f8fafc",

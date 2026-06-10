@@ -50,7 +50,7 @@ export default async (req) => {
     '  <channel>\n' +
     '    <title>NMBS Storingenlog — vandaag</title>\n' +
     '    <link>' + escXml(site + '/') + '</link>\n' +
-    '    <description>Onverwachte storingen op het NMBS-net (bron: api.irail.be), elke 5 minuten bijgewerkt.</description>\n' +
+    '    <description>Onverwachte storingen op het NMBS-net (bron: api.irail.be).</description>\n' +
     '    <language>nl-be</language>\n' +
     '    <lastBuildDate>' + new Date().toUTCString() + '</lastBuildDate>\n' +
     items + '\n' +
