@@ -11,12 +11,14 @@
  * Uses only Node.js built-ins (fs, crypto, https) — no external dependencies.
  */
 
-'use strict';
+import fs from 'node:fs';
+import crypto from 'node:crypto';
+import https from 'node:https';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const fs = require('fs');
-const crypto = require('crypto');
-const https = require('https');
-const path = require('path');
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const API_URL = 'https://api.irail.be/v1/disturbances/?format=json&lang=nl';
 const LOG_DIR = __dirname;

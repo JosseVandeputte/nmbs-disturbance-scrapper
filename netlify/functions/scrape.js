@@ -20,6 +20,7 @@ import crypto from 'node:crypto';
 import { getStore } from '@netlify/blobs';
 
 const API_URL = 'https://api.irail.be/v1/disturbances/?format=json&lang=nl';
+const DATE_INDEX_KEY = '__dates__';
 
 const TRACKED_FIELDS = ['type', 'title', 'description', 'station', 'startTime', 'endTime', 'attachment'];
 
@@ -27,8 +28,35 @@ function hashTitle(title) {
   return crypto.createHash('sha256').update(String(title)).digest('hex').slice(0, 12);
 }
 
+function stableDisturbanceId(item) {
+  const seed = [item.title, item.station, item.startTime]
+    .map((v) => String(v == null ? '' : v).trim().toLowerCase())
+    .join('|');
+  return crypto.createHash('sha256').update(seed).digest('hex').slice(0, 16);
+}
+
+function ensureHistoryArray(record) {
+  if (!Array.isArray(record.history)) record.history = [];
+}
+
 function dayKey(date) {
   return date.toISOString().slice(0, 10);
+}
+
+async function updateDateIndex(store, key) {
+  let dates = [];
+  try {
+    const current = await store.get(DATE_INDEX_KEY, { type: 'json' });
+    if (Array.isArray(current)) dates = current;
+  } catch {
+    dates = [];
+  }
+
+  if (!dates.includes(key)) {
+    dates.push(key);
+    dates.sort().reverse();
+    await store.setJSON(DATE_INDEX_KEY, dates);
+  }
 }
 
 function normalizeResponse(json) {
@@ -42,7 +70,8 @@ function normalizeResponse(json) {
       }
       out.type = 'disturbance';
       out.title = item.title !== undefined ? item.title : '';
-      out.id = hashTitle(out.title);
+      out.legacyId = hashTitle(out.title);
+      out.id = stableDisturbanceId(out);
       return out;
     });
 }
@@ -71,6 +100,7 @@ async function closeOutPreviousDay(store, key, now) {
 
   let changed = 0;
   for (const r of prev) {
+    ensureHistoryArray(r);
     if (r.active !== false) {
       r.history.push({ timestamp: now, field: 'carriedOver', oldValue: null, newValue: true });
       r.active = false;
@@ -100,7 +130,7 @@ export default async () => {
   }
 
   const fetched = normalizeResponse(json);
-  const fetchedById = new Map(fetched.map((f) => [f.id, f]));
+  const fetchedSeenIds = new Set();
 
   let records = [];
   let firstPollOfDay = false;
@@ -117,13 +147,14 @@ export default async () => {
   }
 
   const byId = new Map(records.map((r) => [r.id, r]));
+  for (const r of records) ensureHistoryArray(r);
 
   let countNew = 0;
   let countUpdated = 0;
   let countResolved = 0;
 
   for (const f of fetched) {
-    const existing = byId.get(f.id);
+    const existing = byId.get(f.id) || byId.get(f.legacyId);
 
     if (!existing) {
       const record = {
@@ -146,6 +177,14 @@ export default async () => {
     }
 
     let changed = false;
+    if (existing.id !== f.id && !byId.has(f.id)) {
+      byId.delete(existing.id);
+      existing.history.push({ timestamp: now, field: 'id', oldValue: existing.id, newValue: f.id });
+      existing.id = f.id;
+      byId.set(existing.id, existing);
+      changed = true;
+    }
+
     for (const field of TRACKED_FIELDS) {
       const newValue = f[field] !== undefined ? f[field] : undefined;
       const oldValue = existing[field] !== undefined ? existing[field] : undefined;
@@ -164,11 +203,12 @@ export default async () => {
     }
 
     existing.lastSeen = now;
+    fetchedSeenIds.add(existing.id);
     if (changed) countUpdated++;
   }
 
   for (const r of records) {
-    if (!fetchedById.has(r.id) && r.active !== false) {
+    if (!fetchedSeenIds.has(r.id) && r.active !== false) {
       r.history.push({ timestamp: now, field: 'active', oldValue: true, newValue: false });
       r.active = false;
       r.lastSeen = now;
@@ -177,6 +217,7 @@ export default async () => {
   }
 
   await store.setJSON(key, records, { metadata: { lastPolled: now } });
+  await updateDateIndex(store, key);
 
   console.log(
     '[' + now + '] ' + key + ' — new: ' + countNew + ', updated: ' + countUpdated +

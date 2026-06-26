@@ -14,6 +14,30 @@
 import { getStore } from '@netlify/blobs';
 
 const MAX_DAYS = 92;
+const DATE_INDEX_KEY = '__dates__';
+const SECURITY_HEADERS = {
+  'X-Content-Type-Options': 'nosniff',
+  'X-Frame-Options': 'DENY',
+  'Referrer-Policy': 'strict-origin-when-cross-origin',
+};
+
+async function readDateKeys(store) {
+  try {
+    const index = await store.get(DATE_INDEX_KEY, { type: 'json' });
+    if (Array.isArray(index)) {
+      return index.filter((k) => /^\d{4}-\d{2}-\d{2}$/.test(k)).sort().reverse();
+    }
+  } catch {
+    // Fall back to list() below.
+  }
+
+  const { blobs } = await store.list();
+  return blobs
+    .map((b) => b.key)
+    .filter((k) => /^\d{4}-\d{2}-\d{2}$/.test(k))
+    .sort()
+    .reverse();
+}
 
 const brusselsFmt = new Intl.DateTimeFormat('en-GB', {
   timeZone: 'Europe/Brussels',
@@ -40,17 +64,11 @@ export default async (req) => {
   if (!Number.isFinite(days) || days < 1) days = 30;
   days = Math.min(days, MAX_DAYS);
 
-  const headers = { 'Content-Type': 'application/json', 'Cache-Control': 'public, max-age=900' };
+  const headers = { 'Content-Type': 'application/json', 'Cache-Control': 'public, max-age=900', ...SECURITY_HEADERS };
   const store = getStore({ name: 'disturbances', consistency: 'strong' });
 
   try {
-    const { blobs } = await store.list();
-    const keys = blobs
-      .map((b) => b.key)
-      .filter((k) => /^\d{4}-\d{2}-\d{2}$/.test(k))
-      .sort()
-      .reverse()
-      .slice(0, days);
+    const keys = (await readDateKeys(store)).slice(0, days);
 
     const dayData = await Promise.all(
       keys.map(async (key) => {
@@ -131,6 +149,7 @@ export default async (req) => {
 
     return new Response(JSON.stringify(body), { status: 200, headers });
   } catch (err) {
-    return new Response(JSON.stringify({ error: err.message }), { status: 500, headers });
+    console.error('stats failed:', err.message);
+    return new Response(JSON.stringify({ error: 'Internal server error' }), { status: 500, headers });
   }
 };

@@ -74,8 +74,17 @@ function positionTip(e) {
   chartTip.style.top = y + 'px';
 }
 
-// Renders bars into a container and wires up the shared tooltip; each item's
-// `tip` (HTML) is attached to its bar element.
+function renderChartTip(lines) {
+  chartTip.textContent = '';
+  for (const line of lines) {
+    const node = document.createElement(line.strong ? 'b' : 'span');
+    if (line.className) node.className = line.className;
+    node.textContent = line.text;
+    chartTip.appendChild(node);
+  }
+}
+
+// Renders bars into a container and wires up the shared tooltip.
 function renderBars(container, items, opts) {
   container.innerHTML = barChart(items, opts);
   container.querySelectorAll('.bar').forEach((bar, i) => { bar._tip = items[i].tip; });
@@ -83,7 +92,10 @@ function renderBars(container, items, opts) {
   container.addEventListener('mousemove', (e) => {
     const bar = e.target.closest('.bar');
     if (!bar || !bar._tip) { chartTip.hidden = true; return; }
-    if (chartTip.innerHTML !== bar._tip) chartTip.innerHTML = bar._tip;
+    if (chartTip._tip !== bar._tip) {
+      renderChartTip(bar._tip);
+      chartTip._tip = bar._tip;
+    }
     chartTip.hidden = false;
     positionTip(e);
   });
@@ -95,7 +107,7 @@ function pct(value, total) {
 }
 
 function nMeldingen(n) {
-  return '<b>' + n + '</b> ' + (n === 1 ? 'melding' : 'meldingen');
+  return n + ' ' + (n === 1 ? 'melding' : 'meldingen');
 }
 
 async function loadStats() {
@@ -123,16 +135,16 @@ async function loadStats() {
       label: (i === 0 || i === last30.length - 1) ? fmtDate(d.date) : '',
       value: d.total,
       href: './?date=' + d.date,
-      tip:
-        '<b>' + esc(fmtDayFull(d.date)) + '</b>' +
-        '<span>' + nMeldingen(d.total) + '</span>' +
-        (d.total
-          ? '<span>' + d.active + ' actief · ' + d.resolved + ' opgelost' +
-            (d.carriedOver ? ' · ' + d.carriedOver + ' doorlopend' : '') + '</span>'
-          : '') +
-        (d.avgDuration ? '<span>gem. duur <b>' + esc(fmtDur(d.avgDuration)) + '</b></span>' : '') +
-        (d.maxDuration ? '<span>langste <b>' + esc(fmtDur(d.maxDuration)) + '</b></span>' : '') +
-        '<span class="tip-hint">klik om deze dag te openen</span>',
+      tip: [
+        { text: fmtDayFull(d.date), strong: true },
+        { text: nMeldingen(d.total) },
+        ...(d.total
+          ? [{ text: d.active + ' actief · ' + d.resolved + ' opgelost' + (d.carriedOver ? ' · ' + d.carriedOver + ' doorlopend' : '') }]
+          : []),
+        ...(d.avgDuration ? [{ text: 'gem. duur ' + (fmtDur(d.avgDuration) || '?') }] : []),
+        ...(d.maxDuration ? [{ text: 'langste ' + (fmtDur(d.maxDuration) || '?') }] : []),
+        { text: 'klik om deze dag te openen', className: 'tip-hint' },
+      ],
     })));
 
     const byWeekday = stats.byWeekday || [];
@@ -140,10 +152,11 @@ async function loadStats() {
     renderBars(chartWeekdays, byWeekday.map((v, i) => ({
       label: WEEKDAYS[i],
       value: v,
-      tip:
-        '<b>' + WEEKDAYS_FULL[i] + '</b>' +
-        '<span>' + nMeldingen(v) + '</span>' +
-        (pct(v, wdTotal) ? '<span>' + pct(v, wdTotal) + ' van alle meldingen</span>' : ''),
+      tip: [
+        { text: WEEKDAYS_FULL[i], strong: true },
+        { text: nMeldingen(v) },
+        ...(pct(v, wdTotal) ? [{ text: pct(v, wdTotal) + ' van alle meldingen' }] : []),
+      ],
     })));
 
     const byHour = stats.byHour || [];
@@ -151,10 +164,11 @@ async function loadStats() {
     renderBars(chartHours, byHour.map((v, i) => ({
       label: String(i),
       value: v,
-      tip:
-        '<b>' + String(i).padStart(2, '0') + ':00 – ' + String((i + 1) % 24).padStart(2, '0') + ':00</b>' +
-        '<span>' + nMeldingen(v) + '</span>' +
-        (pct(v, hTotal) ? '<span>' + pct(v, hTotal) + ' van alle meldingen</span>' : ''),
+      tip: [
+        { text: String(i).padStart(2, '0') + ':00 – ' + String((i + 1) % 24).padStart(2, '0') + ':00', strong: true },
+        { text: nMeldingen(v) },
+        ...(pct(v, hTotal) ? [{ text: pct(v, hTotal) + ' van alle meldingen' }] : []),
+      ],
     })), { labelEvery: 6 });
 
     const longest = Array.isArray(stats.longest) ? stats.longest : [];
