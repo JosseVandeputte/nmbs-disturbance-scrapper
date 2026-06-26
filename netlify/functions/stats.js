@@ -106,6 +106,13 @@ export default async (req) => {
 
     perDay.sort((a, b) => a.date.localeCompare(b.date));
     longestCandidates.sort((a, b) => b.duration - a.duration);
+    const longestFiltered = longestCandidates.filter((l) => {
+      const normalizedTitle = (l.title || '')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase();
+      return !normalizedTitle.includes('belgie');
+    });
 
     const body = {
       rangeDays: days,
@@ -119,7 +126,7 @@ export default async (req) => {
           ? Math.round(allDurations.reduce((a, b) => a + b, 0) / allDurations.length)
           : null,
       },
-      longest: longestCandidates.slice(0, 5),
+      longest: longestFiltered.slice(0, 5),
     };
 
     return new Response(JSON.stringify(body), { status: 200, headers });
