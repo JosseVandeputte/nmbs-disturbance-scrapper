@@ -159,16 +159,13 @@ async function loadStats() {
 
     const longest = Array.isArray(stats.longest) ? stats.longest : [];
     longestEl.innerHTML = longest.length
-      ? longest.map(l => {
-        if(!l.title.includes('België:')) {
-          return (
-            '<article class="search-hit">' +
-              '<time><a href="./?date=' + esc(l.date) + '">' + esc(l.date) + '</a></time>' +
-              '<h3>' + esc(l.title) + '</h3>' +
-              '<p>duurde ±' + esc(fmtDur(l.duration) || '?') + '</p>' +
-            '</article>'
-          )
-        }}).join('')
+      ? longest.map(l =>
+          '<article class="search-hit">' +
+            '<time><a href="./?date=' + esc(l.date) + '">' + esc(l.date) + '</a></time>' +
+            '<h3>' + esc(l.title) + '</h3>' +
+            '<p>duurde ±' + esc(fmtDur(l.duration) || '?') + '</p>' +
+          '</article>'
+        ).join('')
       : '<p class="state-msg">Nog geen afgeronde storingen.</p>';
   } catch (e) {
     console.error('loadStats failed:', e);
